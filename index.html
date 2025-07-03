@@ -1,0 +1,693 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Q LIVE - بث المباريات والقنوات</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: 'Cairo', Tahoma, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    header {
+      width: 100%;
+      background-color: #1e1e1e;
+      text-align: center;
+      border-bottom: 2px solid gold;
+      padding: 15px 0 10px;
+      box-sizing: border-box;
+    }
+
+    header h1 {
+      font-size: 28px;
+      color: gold;
+      margin: 10px 0 5px;
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px #f0b90b;
+    }
+
+    header p {
+      margin: 5px 0 15px;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      background-color: #1a1a1a;
+      border-top: 1px solid #333;
+      border-bottom: 2px solid gold;
+      padding: 12px 0;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 700px;
+      box-sizing: border-box;
+    }
+
+    .navbar a {
+      color: gold;
+      font-weight: bold;
+      font-size: 16px;
+      text-decoration: none;
+      transition: color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .navbar a.active {
+      text-shadow: 0 0 8px gold;
+    }
+
+    .navbar a:hover {
+      color: #ffcc00;
+      text-shadow: 0 0 6px gold;
+    }
+
+    .matches-container,
+    .channels-section {
+      width: 100%;
+      max-width: 700px;
+      padding: 20px;
+      box-sizing: border-box;
+      display: none; /* Hide both initially */
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .matches-container.active,
+    .channels-section.active {
+      display: flex;
+    }
+
+    .match-card {
+      background-color: #1f1f1f;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+      text-align: center;
+      position: relative;
+    }
+
+    .league {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .league img {
+      width: 45px;
+      height: 45px;
+      object-fit: contain;
+    }
+
+    .league-name {
+      font-size: 22px;
+      color: gold;
+      font-weight: bold;
+      text-shadow: 0 0 7px #f0b90b;
+    }
+
+    .teams {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .team {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100px;
+    }
+
+    .team img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 2.5px solid gold;
+      object-fit: contain;
+      background-color: #222;
+      padding: 6px;
+      margin-bottom: 10px;
+    }
+
+    .team-name {
+      font-size: 17px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .match-status {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: gold;
+      color: black;
+      font-weight: 700;
+      padding: 7px 17px;
+      border-radius: 22px;
+      font-size: 15px;
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+      min-width: 50px;
+      user-select: none;
+    }
+
+    .match-time {
+      font-size: 16px;
+      color: #ccc;
+      font-weight: 600;
+      margin-top: 44px;
+    }
+
+    .watch-btn {
+      display: inline-block;
+      margin-top: 18px;
+      padding: 13px 30px;
+      background: linear-gradient(45deg, #f0b90b, #d97e00);
+      color: #000;
+      font-weight: 700;
+      border-radius: 32px;
+      text-decoration: none;
+      box-shadow: 0 5px 15px rgba(255, 182, 0, 0.85);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .watch-btn:hover {
+      background: linear-gradient(45deg, #d97e00, #f0b90b);
+      box-shadow: 0 7px 22px rgba(255, 182, 0, 1);
+    }
+
+    /* Channels styling */
+    .channels-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+
+    #search-input {
+      width: 100%;
+      max-width: 700px;
+      padding: 10px 15px;
+      font-size: 16px;
+      border-radius: 30px;
+      border: none;
+      outline: none;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      background-color: #222;
+      color: white;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+      direction: rtl;
+      text-align: right;
+    }
+
+    .channels-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .channel-card {
+      background: #1f1f1f;
+      border-radius: 12px;
+      padding: 15px;
+      width: calc((100% / 3) - 20px);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+      cursor: pointer;
+      transition: 0.3s;
+      position: relative;
+      box-sizing: border-box;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .channel-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+
+    .channel-card img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 2px solid gold;
+      margin-bottom: 10px;
+      background-color: #222;
+      object-fit: contain;
+    }
+
+    .channel-card h3 {
+      margin: 5px 0;
+      color: gold;
+      font-size: 16px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+      width: 100%;
+    }
+
+    .favorite-star {
+      position: absolute;
+      top: 117px;
+      left: center;
+      font-size: 24px;
+      color: rgba(255, 215, 0, 0.4);
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.3s ease;
+      z-index: 10;
+    }
+
+    .favorite-star.active {
+      color: gold;
+      text-shadow: 0 0 8px gold;
+    }
+
+    /* شاشة الفيديو الكاملة */
+    #fullScreenVideo {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+      z-index: 10000;
+      outline: none;
+    }
+
+    #close-fullscreen-btn {
+      display: none;
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      z-index: 11000;
+      background-color: gold;
+      color: black;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 15px;
+      cursor: pointer;
+      box-shadow: 0 0 10px gold;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+
+    #close-fullscreen-btn:hover {
+      background-color: #cc9900;
+    }
+    
+    /* بطاقة منبثقة لتحميل التطبيق */
+    #app-popup {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #1f1f1f;
+      border: 2px solid gold;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+      border-radius: 15px;
+      padding: 15px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      max-width: 320px;
+      box-sizing: border-box;
+    }
+
+    #app-popup img {
+      width: 50px;
+      height: 50px;
+      flex-shrink: 0;
+    }
+
+    #app-popup h3 {
+      margin: 0;
+      color: gold;
+      font-size: 18px;
+    }
+
+    #app-popup p {
+      margin: 5px 0;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    .download-btn {
+      background-color: gold;
+      color: black;
+      font-weight: bold;
+      padding: 6px 14px;
+      border-radius: 30px;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .download-btn:hover {
+      background-color: #ffcc00;
+    }
+
+    .close-popup {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: gold;
+      cursor: pointer;
+    }
+
+    @media (max-width: 480px) {
+      #app-popup {
+        bottom: 15px;
+        right: 10px;
+        left: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      #app-popup .popup-content {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <h1>Q LIVE ⚽</h1>
+  <p>بث مباشر لأهم مباريات اليوم</p>
+</header>
+
+<nav class="navbar">
+  <a id="matches-link" class="active">🏟 جدول المباريات</a>
+  <a id="channels-link">📺 القنوات</a>
+  <a id="favorites-link">⭐ المفضلة</a>
+</nav>
+
+<!-- قسم المباريات -->
+<section class="matches-container active" id="matches">
+ 
+
+   <!-- مباراة 2 -->
+  <div class="match-card">
+    <div class="league">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/2025_FIFA_Club_World_Cup.svg/250px-2025_FIFA_Club_World_Cup.svg.png" alt="كأس العالم للأندية" />
+      <div class="league-name">كأس العالم للأندية 2025</div>
+    </div>
+
+    <div class="teams">
+      <div class="team">
+        <img src="https://static.flashscore.com/res/image/data/WlxJgSdM-WUfDDYk1.png" alt="ريال مدريد" />
+        <div class="team-name"> نادي فلومينينسي</div>
+      </div>
+
+      <div class="match-status">لم تبدأ بعد</div>
+
+      <div class="team">
+        <img src="https://static.flashscore.com/res/image/data/8YrWgbEG-joUWHZ1t.png" alt="يوفنتوس" />
+        <div class="team-name">نادي الهلال</div>
+      </div>
+    </div>
+    
+        <div class="match-time">🕘 04.07.2025 21:00 </div>
+    <a href="https://spoort.vip-gx.online/albaplayer/action/" target="_blank" class="watch-btn">مشاهدة المباراة</a>
+  </div>
+
+
+
+ <div class="match-card">
+    <div class="league">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/2025_FIFA_Club_World_Cup.svg/250px-2025_FIFA_Club_World_Cup.svg.png" alt="كأس العالم للأندية" />
+      <div class="league-name">كأس العالم للأندية 2025</div>
+    </div>
+
+    <div class="teams">
+      <div class="team">
+        <img src="https://static.flashscore.com/res/image/data/GMmvDEdM-IROrZEJb.png" alt="ريال مدريد" />
+        <div class="team-name"> تشيلسي </div>
+      </div>
+
+      <div class="match-status">لم تبدأ بعد</div>
+
+      <div class="team">
+        <img src="https://static.flashscore.com/res/image/data/xCtpyPHG-ALgHCh57.png" alt="يوفنتوس" />
+        <div class="team-name">بالميراس </div>
+      </div>
+    </div>
+    
+        <div class="match-time">🕘 05.07.2025 03:00 </div>
+    <a href="https://spoort.vip-gx.online/albaplayer/action/" target="_blank" class="watch-btn">مشاهدة المباراة</a>
+  </div>
+
+
+
+
+</section>
+</section>
+
+<!-- قسم القنوات -->
+<section class="channels-section" id="channels">
+  <input type="search" id="search-input" placeholder="ابحث عن قناة..." autocomplete="off" />
+  <div class="channels-container"></div>
+</section>
+
+<!-- فيديو شاشة كاملة + زر إغلاق -->
+<video id="fullScreenVideo" controls></video>
+<button id="close-fullscreen-btn" title="إغلاق المشغل">× إغلاق</button>
+
+<!-- بطاقة منبثقة لتحميل التطبيق -->
+<div id="app-popup">
+  <div class="popup-content" style="position: relative; display: flex; align-items: center; gap: 12px;">
+    <img src="https://cdn-icons-png.flaticon.com/512/888/888857.png" alt="تحميل التطبيق" />
+    <div>
+      <h3>قم بتحميل تطبيق Q LIVE 📱</h3>
+      <p>شاهد المباريات مباشرة من هاتفك بكل سهولة</p>
+      <a href="https://example.com/your-app.apk" class="download-btn" target="_blank" rel="noopener">تحميل التطبيق</a>
+    </div>
+    <button class="close-popup" onclick="closePopup()">×</button>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script>
+  const fullScreenVideo = document.getElementById('fullScreenVideo');
+  const closeFullscreenBtn = document.getElementById('close-fullscreen-btn');
+
+  const container = document.querySelector('.channels-container');
+  const searchInput = document.getElementById('search-input');
+
+  let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+  let channelsData = [];
+  let currentFilterFavorites = false;
+
+  function saveFavorites() {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }
+
+  function showFullScreenVideo(url) {
+    // إخفاء باقي العناصر
+    document.body.querySelectorAll('header, nav, .matches-container, .channels-section').forEach(el => {
+      el.style.display = 'none';
+    });
+
+    // تشغيل الفيديو
+    if (Hls.isSupported()) {
+      if (window.fullscreenHls) window.fullscreenHls.destroy();
+      window.fullscreenHls = new Hls();
+      window.fullscreenHls.loadSource(url);
+      window.fullscreenHls.attachMedia(fullScreenVideo);
+    } else if (fullScreenVideo.canPlayType('application/vnd.apple.mpegurl')) {
+      fullScreenVideo.src = url;
+    } else {
+      alert('لا يمكن تشغيل هذا النوع من البث في جهازك');
+      return;
+    }
+
+    fullScreenVideo.style.display = 'block';
+    closeFullscreenBtn.style.display = 'block';
+    fullScreenVideo.play();
+  }
+
+  function hideFullScreenVideo() {
+    if (window.fullscreenHls) {
+      window.fullscreenHls.destroy();
+      window.fullscreenHls = null;
+    }
+    fullScreenVideo.pause();
+    fullScreenVideo.src = '';
+    fullScreenVideo.style.display = 'none';
+    closeFullscreenBtn.style.display = 'none';
+
+    // إظهار باقي العناصر
+    document.body.querySelectorAll('header, nav, .matches-container, .channels-section').forEach(el => {
+      el.style.display = '';
+    });
+  }
+
+  closeFullscreenBtn.onclick = hideFullScreenVideo;
+
+  function createChannelCard(channel, index) {
+    const card = document.createElement('div');
+    card.className = 'channel-card';
+
+    const star = document.createElement('div');
+    star.className = 'favorite-star';
+    star.innerHTML = '★';
+
+    if (favorites.includes(index)) {
+      star.classList.add('active');
+    }
+
+    star.onclick = (e) => {
+      e.stopPropagation();
+      if (favorites.includes(index)) {
+        favorites = favorites.filter(i => i !== index);
+        star.classList.remove('active');
+      } else {
+        favorites.push(index);
+        star.classList.add('active');
+      }
+      saveFavorites();
+      // أعد عرض القنوات حسب الفلتر الحالي (المفضلة أو الكل)
+      renderChannels(currentFilterFavorites, searchInput.value);
+    };
+
+    card.innerHTML = `
+      <img src="${channel.logo}" onerror="this.src='https://via.placeholder.com/70?text=Logo'">
+      <h3>${channel.name}</h3>
+    `;
+
+    card.appendChild(star);
+    card.onclick = () => showFullScreenVideo(channel.url);
+
+    return card;
+  }
+
+  function renderChannels(filterFavorites = false, filterText = '') {
+    currentFilterFavorites = filterFavorites;
+
+    container.innerHTML = '';
+    let toRender = filterFavorites
+      ? channelsData.filter((_, idx) => favorites.includes(idx))
+      : channelsData;
+
+    // فلترة النص في البحث
+    if (filterText.trim() !== '') {
+      const text = filterText.trim().toLowerCase();
+      toRender = toRender.filter(ch => ch.name.toLowerCase().includes(text));
+    }
+
+    if (toRender.length === 0) {
+      container.innerHTML = `<p style="color:gold; font-weight:bold; text-align:center;">${
+        filterFavorites ? 'لا توجد قنوات مفضلة' : 'لا توجد قنوات للعرض'
+      }</p>`;
+      return;
+    }
+
+    toRender.forEach((channel, idx) => {
+      // حساب الفهرس الأصلي للقناة في channelsData
+      const originalIndex = filterFavorites
+        ? favorites[idx]
+        : idx;
+      container.appendChild(createChannelCard(channel, originalIndex));
+    });
+  }
+
+  // رابط ملف M3U للقنوات
+  const m3uUrl = "https://raw.githubusercontent.com/touina333/Channles/refs/heads/main/playlist.m3u";
+
+  fetch(m3uUrl)
+    .then(res => {
+      if (!res.ok) throw new Error("فشل تحميل ملف القنوات");
+      return res.text();
+    })
+    .then(data => {
+      const lines = data.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].startsWith('#EXTINF')) {
+          const info = lines[i];
+          const logoMatch = info.match(/tvg-logo="(.*?)"/);
+          const logo = logoMatch ? logoMatch[1] : '';
+          const name = info.split(',')[1] || 'قناة غير معروفة';
+          const url = lines[i + 1] || '';
+          channelsData.push({ name, logo, url });
+        }
+      }
+      renderChannels();
+    })
+    .catch(err => {
+      container.innerHTML = `<p style="color:red; font-weight:bold; text-align:center;">خطأ: ${err.message}</p>`;
+    });
+
+  // التبديل بين الأقسام
+  const matchesSection = document.getElementById('matches');
+  const channelsSection = document.getElementById('channels');
+
+  const matchesLink = document.getElementById('matches-link');
+  const channelsLink = document.getElementById('channels-link');
+  const favoritesLink = document.getElementById('favorites-link');
+
+  function activateNavLink(activeLink) {
+    [matchesLink, channelsLink, favoritesLink].forEach(link => {
+      if (link === activeLink) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  function showSection(section) {
+    if (section === 'matches') {
+      matchesSection.classList.add('active');
+      channelsSection.classList.remove('active');
+      activateNavLink(matchesLink);
+    } else if (section === 'channels') {
+      matchesSection.classList.remove('active');
+      channelsSection.classList.add('active');
+      activateNavLink(channelsLink);
+      renderChannels(false, searchInput.value);
+    } else if (section === 'favorites') {
+      matchesSection.classList.remove('active');
+      channelsSection.classList.add('active');
+      activateNavLink(favoritesLink);
+      renderChannels(true, searchInput.value);
+    }
+  }
+
+  matchesLink.onclick = () => showSection('matches');
+  channelsLink.onclick = () => showSection('channels');
+  favoritesLink.onclick = () => showSection('favorites');
+
+  // البحث في القنوات (والمفضلة إذا مفعلة)
+  searchInput.oninput = () => {
+    renderChannels(currentFilterFavorites, searchInput.value);
+  };
+</script>
+</body>
+</html>
